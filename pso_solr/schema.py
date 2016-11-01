@@ -8,7 +8,7 @@ class SchemaBuilder():
 
     user_types = OrderedDict()  # Collect all user defined field types
     models = []
-    fields = []
+    fields_map = {}
     default_operator = 'OR'
     unique_field = None
     name = ''
@@ -30,13 +30,28 @@ class SchemaBuilder():
         self.models.append(model)
         for field in model.get_fields():
             self.add_field_type(field.field_type)
-            self.fields.append(field)
+            self.add_field(field)
+
+    def add_field(self, field):
+        if field.field_name in self.fields_map:
+            # TODO normal check
+            existing = self.fields_map[field.field_name]
+            if type(existing) != type(field) \
+               or field.multi_valued != existing.multi_valued:
+                raise ValueError(
+                    'Two different type fields with same name '
+                    '"{name}" within one schema.\n'
+                    'Change name or use model prefix'
+                    ''.format(name=field.field_name)
+                )
+        else:
+            self.fields_map[field.field_name] = field
     #
     #
 
     def get_schema_xml(self):
         types = (self.field_type_xml(ft) for ft in self.user_types.values())
-        fields = (self.field_xml(field) for field in self.fields)
+        fields = (self.field_xml(field) for field in self.fields_map.values())
         config = self.get_config_xml()
         return(etree.tostring(
             E('schema', *types, *fields, *config, name=self.name),
