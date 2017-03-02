@@ -88,10 +88,15 @@ class TrieField(BaseField):
 class TrieFloatField(BaseField):
     field_type = solr_auto_field_type('TrieFloatField')
 
+    def to_python(self, value):
+        return float(value)
+
 
 class TrieIntField(BaseField):
     field_type = solr_auto_field_type('TrieIntField')
 
+    def to_python(self, value):
+        return int(value)
 
 class TrieLongField(BaseField):
     field_type = solr_auto_field_type('TrieLongField')
@@ -99,6 +104,12 @@ class TrieLongField(BaseField):
 
 class UUIDField(BaseField):
     field_type = solr_auto_field_type('UUIDField')
+
+    def to_python(self, value):
+        return UUID(value)
+
+    def to_index(self, value):
+        return str(value)
 
 
 # Aliases
